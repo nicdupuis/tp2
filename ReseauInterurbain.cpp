@@ -89,5 +89,4 @@ namespace TP2
     }
 
     //À compléter au besoin par d'autres méthodes
-
 }//Fin du namespace
