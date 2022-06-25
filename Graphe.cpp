@@ -19,7 +19,8 @@ namespace TP2
  * \function Graphe(size_t nbSommets)
  * \brief Constructeur d'objets Graphe
  */
-    Graphe::Graphe(size_t nbSommets): nbSommets(nbSommets){
+    Graphe::Graphe(size_t nbSommets): nbSommets(nbSommets), listesAdj(nbSommets){
+
     }
 
 /**
@@ -36,6 +37,7 @@ namespace TP2
  */
     void Graphe::resize(size_t nouvelleTaille){
         nbSommets = nouvelleTaille;
+        listesAdj.resize(nouvelleTaille);
     }
 
 /**
@@ -47,7 +49,7 @@ namespace TP2
  */
     void Graphe::nommer(size_t sommet, const std::string& nom){
         if(sommet > getNombreSommets()) throw std::logic_error("nommer: Sommet plus grand que nbSommets");
-        noms.at(sommet) = nom;
+        noms.push_back(nom);
     }
 
 /**
@@ -63,7 +65,7 @@ namespace TP2
     void Graphe::ajouterArc(size_t source, size_t destination, float duree, float cout){
         if(source > getNombreSommets() || destination > getNombreSommets()) throw std::logic_error("ajouterArc: source ou destination plus grande que nbSommets");
         if(arcExiste(source, destination)) throw std::logic_error("ajouterArc: l'arc existe déjà");
-        Ponderations poids{};
+        Ponderations poids;
         poids.duree = duree;
         poids.cout = cout;
         listesAdj.at(source).push_back(Arc(destination, poids));
@@ -81,12 +83,14 @@ namespace TP2
     void Graphe::enleverArc(size_t source, size_t destination){
         if(source > getNombreSommets() || destination > getNombreSommets()) throw std::logic_error("enleverArc: source ou destination plus grande que nbSommets");
         if(!arcExiste(source, destination)) throw std::logic_error("enleverArc: l'arc n'existe pas");
-        /*for(const auto& i: listesAdj.at(source))
+        for(auto i = listesAdj.at(source).begin(); i != listesAdj.at(source).end(); i++)
         {
-            if (i.destination == destination)
-                listesAdj.at(source).remove(i);
-        }*/
-        nbArcs--;
+            if(i->destination == destination)
+            {
+                listesAdj.at(source).erase(i);
+                nbArcs--;
+            }
+        }
     }
 
 /**
@@ -99,6 +103,7 @@ namespace TP2
  */
     bool Graphe::arcExiste(size_t source, size_t destination) const{
         if(source > getNombreSommets() || destination > getNombreSommets()) throw std::logic_error("arcExiste: Source ou destination plus grande que nbSommets");
+        if(listesAdj.empty()) return false;
         for(const auto& i: listesAdj.at(source))
         {
             if (i.destination == destination) return true;

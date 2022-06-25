@@ -76,6 +76,10 @@ public:
 
 	//Vous pouvez ajoutez d'autres méthodes publiques si vous sentez leur nécessité
 
+    std::vector<int> visiterEnProfondeur(const Graphe& graphe);
+
+
+
 private:
 
 	Graphe unReseau;			//Le type ReseauRoutier est composé d'un graphe

@@ -10,19 +10,21 @@
  */
 #include <sstream>
 #include <fstream>
+#include <utility>
 #include "ReseauInterurbain.h"
 //vous pouvez inclure d'autres librairies si c'est nécessaire
 
 namespace TP2
 {
-    ReseauInterurbain::ReseauInterurbain(std::string nomReseau, size_t nbVilles){
+    ReseauInterurbain::ReseauInterurbain(std::string nomReseau, size_t nbVilles): nomReseau(std::move(nomReseau)),
+                                                                                  unReseau(nbVilles){
     }
 
     ReseauInterurbain::~ReseauInterurbain() {
-
     }
 
     void ReseauInterurbain::resize(size_t nouvelleTaille){
+        unReseau.resize(nouvelleTaille);
     }
 
     // Méthode fournie
