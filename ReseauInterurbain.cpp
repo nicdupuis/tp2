@@ -11,25 +11,28 @@
 #include <sstream>
 #include <fstream>
 #include <utility>
+#include <map>
+#include <stack>
+#include <limits>
+#include <set>
+#include <algorithm>
 #include "ReseauInterurbain.h"
 //vous pouvez inclure d'autres librairies si c'est nécessaire
 
-namespace TP2
-{
-    ReseauInterurbain::ReseauInterurbain(std::string nomReseau, size_t nbVilles): nomReseau(std::move(nomReseau)),
-                                                                                  unReseau(nbVilles){
+namespace TP2 {
+    ReseauInterurbain::ReseauInterurbain(std::string nomReseau, size_t nbVilles) : nomReseau(std::move(nomReseau)),
+                                                                                   unReseau(nbVilles) {
     }
 
     ReseauInterurbain::~ReseauInterurbain() {
     }
 
-    void ReseauInterurbain::resize(size_t nouvelleTaille){
+    void ReseauInterurbain::resize(size_t nouvelleTaille) {
         unReseau.resize(nouvelleTaille);
     }
 
     // Méthode fournie
-    void ReseauInterurbain::chargerReseau(std::ifstream & fichierEntree)
-    {
+    void ReseauInterurbain::chargerReseau(std::ifstream &fichierEntree) {
         if (!fichierEntree.is_open())
             throw std::logic_error("ReseauInterurbain::chargerReseau: Le fichier n'est pas ouvert !");
 
@@ -51,15 +54,13 @@ namespace TP2
 
         getline(fichierEntree, buff); //Premiere ville
 
-        while(buff != "Liste des trajets:")
-        {
+        while (buff != "Liste des trajets:") {
             unReseau.nommer(i, buff);
             getline(fichierEntree, buff);
             i++;
         }
 
-        while(!fichierEntree.eof())
-        {
+        while (!fichierEntree.eof()) {
             getline(fichierEntree, buff);
             std::string source = buff;
             getline(fichierEntree, buff);
@@ -78,16 +79,125 @@ namespace TP2
         }
     }
 
-    Chemin ReseauInterurbain::rechercheCheminDijkstra(const std::string& source, const std::string& destination, bool dureeCout) const
-    {
+    Chemin ReseauInterurbain::rechercheCheminDijkstra(const std::string &source, const std::string &destination,
+                                                      bool dureeCout) const {
         Chemin cheminTrouve;
+        int nombreSommets = unReseau.getNombreSommets();
+
+        std::list<int> ensembleNonSolutionne; //Q
+        std::set<int> ensembleSolutionne; //T
+        std::vector<float> distances(nombreSommets); //duree ou cout //D
+
+        std::set< std::pair<float, int> > setds;
+        std::vector<float> dist(nombreSommets, std::numeric_limits<float>::infinity());
+
+        setds.insert(std::make_pair(0, unReseau.getNumeroSommet(source)));
+        dist[unReseau.getNumeroSommet(source)] = 0;
+
+        while(!setds.empty())
+        {
+            std::pair<float, int> tmp = *(setds.begin());
+            setds.erase(setds.begin());
+            int u = tmp.second;
+//TODO: suivre
+        }
+
+
+        if (!dureeCout) {
+            for (int i = 0; i < nombreSommets; ++i) {
+                distances[i] = std::numeric_limits<float>::infinity();
+                ensembleNonSolutionne.push_back(i);
+            }
+            distances[unReseau.getNumeroSommet(source)] = 0;
+
+            while (!ensembleNonSolutionne.empty()) {
+                std::list<int>::iterator i;
+                i = std::min_element(ensembleNonSolutionne.begin(), ensembleNonSolutionne.end());
+                int u = *i;
+                ensembleNonSolutionne.remove(u);
+                ensembleSolutionne.insert(u);
+
+                for (int k = 0; k < ensembleNonSolutionne.size(); ++k) {
+                    if (std::find(unReseau.listerSommetsAdjacents(u).begin(), unReseau.listerSommetsAdjacents(u).end(),
+                                  k) != unReseau.listerSommetsAdjacents(u).end()
+                        && (ensembleSolutionne.find(k) == ensembleSolutionne.end())
+                        && (unReseau.arcExiste(u, k))) {
+                        float temp = distances[u] + unReseau.getPonderationsArc(u, k).cout;
+                        if (temp < distances[k]) {
+                            distances[k] = temp;
+                            cheminTrouve.listeVilles.push_back(unReseau.getNomSommet(u));
+                        }
+                    }
+                }
+            }
+            cheminTrouve.coutTotal = distances[-1];
+        }
+
+        if (dureeCout) {
+            for (int i = 0; i < nombreSommets; ++i) {
+                distances[i] = std::numeric_limits<float>::infinity();
+                ensembleNonSolutionne.push_back(i);
+            }
+            distances[unReseau.getNumeroSommet(source)] = 0;
+
+            while (!ensembleNonSolutionne.empty()) {
+                std::list<int>::iterator i;
+                i = std::min_element(ensembleNonSolutionne.begin(), ensembleNonSolutionne.end());
+                int u = *i;
+                ensembleNonSolutionne.remove(u);
+                ensembleSolutionne.insert(u);
+
+                for (int k = 0; k < ensembleNonSolutionne.size(); ++k) {
+                    if (std::find(unReseau.listerSommetsAdjacents(u).begin(), unReseau.listerSommetsAdjacents(u).end(),
+                                  k) != unReseau.listerSommetsAdjacents(u).end()
+                        && (ensembleSolutionne.find(k) == ensembleSolutionne.end())
+                        && (unReseau.arcExiste(u, k))) {
+                        float temp = distances[u] + unReseau.getPonderationsArc(u, k).duree;
+                        if (temp < distances[k]) {
+                            distances[k] = temp;
+                            cheminTrouve.listeVilles.push_back(unReseau.getNomSommet(u));
+                        }
+                    }
+                }
+            }
+            cheminTrouve.dureeTotale = distances[-1];
+        }
         return cheminTrouve;
     }
 
-    std::vector<std::vector<std::string> > ReseauInterurbain::algorithmeKosaraju()
-    {
+    std::vector<std::vector<std::string> > ReseauInterurbain::algorithmeKosaraju() {
         std::vector<std::vector<std::string> > composantes;
         return composantes;
+    }
+
+    std::vector<int> ReseauInterurbain::visiterEnProfondeur(const Graphe &graphe, int depart) {
+        if (depart > graphe.getNombreSommets()) throw std::logic_error("visiterEnProfondeur: départ ne fait pas parti");
+
+        std::map<int, bool> visite;
+        int nombreSommets = graphe.getNombreSommets();
+        std::vector<int> sommets{nombreSommets};
+        for (auto sommet: sommets) visite[sommet] = false;
+
+        std::stack<int> enAttente;
+
+        std::vector<int> ordreVisite;
+        if (graphe.getNombreSommets() == 0) return ordreVisite;
+
+        enAttente.push(depart);
+        visite.at(depart) = true;
+
+        while (!enAttente.empty()) {
+            auto elementCourant = enAttente.top();
+            enAttente.pop();
+            ordreVisite.push_back(elementCourant);
+            for (auto voisin: graphe.listerSommetsAdjacents(elementCourant)) {
+                if (!visite.at(voisin)) {
+                    enAttente.push(voisin);
+                    visite.at(voisin) = true;
+                }
+            }
+        }
+        return ordreVisite;
     }
 
     //À compléter au besoin par d'autres méthodes

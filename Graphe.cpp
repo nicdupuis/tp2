@@ -203,8 +203,6 @@ namespace TP2
             }
         }
         throw std::logic_error("getPonderationsArc: arc n'existe pas");
-/*Ponderations poids;
-return poids;*/
     }
 
 }//Fin du namespace

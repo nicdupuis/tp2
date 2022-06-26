@@ -76,9 +76,7 @@ public:
 
 	//Vous pouvez ajoutez d'autres méthodes publiques si vous sentez leur nécessité
 
-    std::vector<int> visiterEnProfondeur(const Graphe& graphe);
-
-
+    std::vector<int> visiterEnProfondeur(const Graphe& graphe, int depart);
 
 private:
 
