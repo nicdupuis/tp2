@@ -99,9 +99,25 @@ namespace TP2 {
             std::pair<float, int> tmp = *(setds.begin());
             setds.erase(setds.begin());
             int u = tmp.second;
-//TODO: suivre
-        }
+            for(auto i: unReseau.listerSommetsAdjacents(u))
+            {
+                float cout = unReseau.getPonderationsArc(u, i).cout;
 
+                if(dist[i] > dist[u] + cout)
+                {
+                    if(dist[i] != std::numeric_limits<float>::infinity())
+                        setds.erase(setds.find(std::make_pair(dist[i],i)));
+                    dist[i] = dist[u] + cout;
+                    setds.insert(std::make_pair(dist[i],i));
+                }
+            }
+        }
+        cheminTrouve.coutTotal = dist[unReseau.getNumeroSommet(destination)];
+        // Print shortest distances stored in dist[]
+        printf("Vertex   Distance from Source\n");
+        for (int i = 0; i < nombreSommets; ++i)
+            printf("%d \t\t %f\n", i, dist[i]);
+        return cheminTrouve;
 
         if (!dureeCout) {
             for (int i = 0; i < nombreSommets; ++i) {
@@ -111,11 +127,11 @@ namespace TP2 {
             distances[unReseau.getNumeroSommet(source)] = 0;
 
             while (!ensembleNonSolutionne.empty()) {
-                std::list<int>::iterator i;
-                i = std::min_element(ensembleNonSolutionne.begin(), ensembleNonSolutionne.end());
-                int u = *i;
-                ensembleNonSolutionne.remove(u);
-                ensembleSolutionne.insert(u);
+                std::vector<float>::iterator it;
+                it = std::min_element(distances.begin(), distances.end());
+                float u = *it;
+                ensembleNonSolutionne.remove(it - distances.begin());
+                ensembleSolutionne.insert(it - distances.begin());
 
                 for (int k = 0; k < ensembleNonSolutionne.size(); ++k) {
                     if (std::find(unReseau.listerSommetsAdjacents(u).begin(), unReseau.listerSommetsAdjacents(u).end(),
