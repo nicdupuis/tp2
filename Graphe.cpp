@@ -19,8 +19,7 @@ namespace TP2
  * \function Graphe(size_t nbSommets)
  * \brief Constructeur d'objets Graphe
  */
-    Graphe::Graphe(size_t nbSommets): nbSommets(nbSommets), listesAdj(nbSommets){
-
+    Graphe::Graphe(size_t nbSommets): nbSommets(nbSommets), listesAdj(nbSommets), nbArcs(0){
     }
 
 /**

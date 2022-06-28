@@ -84,101 +84,85 @@ namespace TP2 {
         Chemin cheminTrouve;
         int nombreSommets = unReseau.getNombreSommets();
 
-        std::list<int> ensembleNonSolutionne; //Q
-        std::set<int> ensembleSolutionne; //T
-        std::vector<float> distances(nombreSommets); //duree ou cout //D
+        if(!dureeCout)
+        {
+            std::set< std::pair<float, int> > setds;
+            std::vector<float> dist(nombreSommets, std::numeric_limits<float>::infinity());
+            std::vector<int> predecesseurs(nombreSommets);
 
-        std::set< std::pair<float, int> > setds;
+            setds.insert(std::make_pair(0, unReseau.getNumeroSommet(source)));
+            dist[unReseau.getNumeroSommet(source)] = 0;
+
+            while(!setds.empty())
+            {
+                std::pair<float, int> tmp = *(setds.begin());
+                setds.erase(setds.begin());
+                int u = tmp.second;
+                for(auto i: unReseau.listerSommetsAdjacents(u))
+                {
+                    float cout = unReseau.getPonderationsArc(u, i).cout;
+
+                    if(dist[i] > dist[u] + cout)
+                    {
+                        if(dist[i] != std::numeric_limits<float>::infinity())
+                            setds.erase(setds.find(std::make_pair(dist[i],i)));
+                        dist[i] = dist[u] + cout;
+                        setds.insert(std::make_pair(dist[i],i));
+                        predecesseurs[i] = u;
+                    }
+                }
+            }
+
+            if(dist[unReseau.getNumeroSommet(destination)] != std::numeric_limits<float>::infinity())
+            {
+                cheminTrouve.reussi = true;
+                cheminTrouve.listeVilles.insert(cheminTrouve.listeVilles.begin(), destination);
+                int index = predecesseurs[unReseau.getNumeroSommet(destination)];
+                while(index != unReseau.getNumeroSommet(source))
+                {
+                    cheminTrouve.listeVilles.insert(cheminTrouve.listeVilles.begin(), unReseau.getNomSommet(index));
+                    index = predecesseurs[index];
+                }
+                cheminTrouve.coutTotal = dist[unReseau.getNumeroSommet(destination)];
+                cheminTrouve.listeVilles.insert(cheminTrouve.listeVilles.begin(), source);
+            }
+            return cheminTrouve;
+        }
+
+        std::set<std::pair<float, int> > setds;
         std::vector<float> dist(nombreSommets, std::numeric_limits<float>::infinity());
-
+        std::vector<int> predecesseurs(nombreSommets);
         setds.insert(std::make_pair(0, unReseau.getNumeroSommet(source)));
         dist[unReseau.getNumeroSommet(source)] = 0;
-
-        while(!setds.empty())
-        {
+        while (!setds.empty()) {
             std::pair<float, int> tmp = *(setds.begin());
             setds.erase(setds.begin());
             int u = tmp.second;
-            for(auto i: unReseau.listerSommetsAdjacents(u))
-            {
-                float cout = unReseau.getPonderationsArc(u, i).cout;
+            for (auto i: unReseau.listerSommetsAdjacents(u)) {
+                float duree = unReseau.getPonderationsArc(u, i).duree;
 
-                if(dist[i] > dist[u] + cout)
-                {
-                    if(dist[i] != std::numeric_limits<float>::infinity())
-                        setds.erase(setds.find(std::make_pair(dist[i],i)));
-                    dist[i] = dist[u] + cout;
-                    setds.insert(std::make_pair(dist[i],i));
+                if (dist[i] > dist[u] + duree) {
+                    if (dist[i] != std::numeric_limits<float>::infinity())
+                        setds.erase(setds.find(std::make_pair(dist[i], i)));
+                    dist[i] = dist[u] + duree;
+                    setds.insert(std::make_pair(dist[i], i));
+                    predecesseurs[i] = u;
                 }
             }
         }
-        cheminTrouve.coutTotal = dist[unReseau.getNumeroSommet(destination)];
-        // Print shortest distances stored in dist[]
-        printf("Vertex   Distance from Source\n");
-        for (int i = 0; i < nombreSommets; ++i)
-            printf("%d \t\t %f\n", i, dist[i]);
-        return cheminTrouve;
-
-        if (!dureeCout) {
-            for (int i = 0; i < nombreSommets; ++i) {
-                distances[i] = std::numeric_limits<float>::infinity();
-                ensembleNonSolutionne.push_back(i);
+        if (dist[unReseau.getNumeroSommet(destination)] != std::numeric_limits<float>::infinity()) {
+            cheminTrouve.reussi = true;
+            cheminTrouve.listeVilles.insert(cheminTrouve.listeVilles.begin(), destination);
+            int index = predecesseurs[unReseau.getNumeroSommet(destination)];
+            while (index != unReseau.getNumeroSommet(source)) {
+                cheminTrouve.listeVilles.insert(cheminTrouve.listeVilles.begin(), unReseau.getNomSommet(index));
+                index = predecesseurs[index];
             }
-            distances[unReseau.getNumeroSommet(source)] = 0;
-
-            while (!ensembleNonSolutionne.empty()) {
-                std::vector<float>::iterator it;
-                it = std::min_element(distances.begin(), distances.end());
-                float u = *it;
-                ensembleNonSolutionne.remove(it - distances.begin());
-                ensembleSolutionne.insert(it - distances.begin());
-
-                for (int k = 0; k < ensembleNonSolutionne.size(); ++k) {
-                    if (std::find(unReseau.listerSommetsAdjacents(u).begin(), unReseau.listerSommetsAdjacents(u).end(),
-                                  k) != unReseau.listerSommetsAdjacents(u).end()
-                        && (ensembleSolutionne.find(k) == ensembleSolutionne.end())
-                        && (unReseau.arcExiste(u, k))) {
-                        float temp = distances[u] + unReseau.getPonderationsArc(u, k).cout;
-                        if (temp < distances[k]) {
-                            distances[k] = temp;
-                            cheminTrouve.listeVilles.push_back(unReseau.getNomSommet(u));
-                        }
-                    }
-                }
-            }
-            cheminTrouve.coutTotal = distances[-1];
-        }
-
-        if (dureeCout) {
-            for (int i = 0; i < nombreSommets; ++i) {
-                distances[i] = std::numeric_limits<float>::infinity();
-                ensembleNonSolutionne.push_back(i);
-            }
-            distances[unReseau.getNumeroSommet(source)] = 0;
-
-            while (!ensembleNonSolutionne.empty()) {
-                std::list<int>::iterator i;
-                i = std::min_element(ensembleNonSolutionne.begin(), ensembleNonSolutionne.end());
-                int u = *i;
-                ensembleNonSolutionne.remove(u);
-                ensembleSolutionne.insert(u);
-
-                for (int k = 0; k < ensembleNonSolutionne.size(); ++k) {
-                    if (std::find(unReseau.listerSommetsAdjacents(u).begin(), unReseau.listerSommetsAdjacents(u).end(),
-                                  k) != unReseau.listerSommetsAdjacents(u).end()
-                        && (ensembleSolutionne.find(k) == ensembleSolutionne.end())
-                        && (unReseau.arcExiste(u, k))) {
-                        float temp = distances[u] + unReseau.getPonderationsArc(u, k).duree;
-                        if (temp < distances[k]) {
-                            distances[k] = temp;
-                            cheminTrouve.listeVilles.push_back(unReseau.getNomSommet(u));
-                        }
-                    }
-                }
-            }
-            cheminTrouve.dureeTotale = distances[-1];
+            cheminTrouve.dureeTotale = dist[unReseau.getNumeroSommet(destination)];
+            cheminTrouve.listeVilles.insert(cheminTrouve.listeVilles.begin(), source);
         }
         return cheminTrouve;
+
     }
 
     std::vector<std::vector<std::string> > ReseauInterurbain::algorithmeKosaraju() {
