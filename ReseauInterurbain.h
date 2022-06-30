@@ -16,6 +16,7 @@
 #include <climits>
 #include <vector>
 #include <list>
+#include <stack>
 //vous pouvez inclure d'autres librairies de la STL si vous pensez les utiliser
 
 
@@ -76,7 +77,11 @@ public:
 
 	//Vous pouvez ajoutez d'autres méthodes publiques si vous sentez leur nécessité
 
-    std::vector<int> visiterEnProfondeur(const Graphe& graphe, int depart);
+    Graphe inverserGraphe(const Graphe& graphe);
+
+    std::vector<std::string> DFS(int v, std::vector<bool>& visited, const Graphe& graphe, std::vector<std::string>& composante);
+
+    void ordreVisite(int v, std::vector<bool>& visited, std::stack<int> &Stack);
 
 private:
 

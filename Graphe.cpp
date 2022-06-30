@@ -158,7 +158,6 @@ namespace TP2
             compteur++;
         }
         throw std::logic_error("getNumeroSommet: le nom n'existe pas");
-/*        return 0;*/
     }
 
 /**
